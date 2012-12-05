@@ -93,10 +93,9 @@ end
 
 bash "install foreman" do
   code <<-EOH
-  # Version 0.48 removes 'log_root' variable
-  gem install foreman -v 0.47.0
+  gem install foreman
   EOH
-  #this fails on NeCTAR Ubuntu Lucid..
+  #this fails if Chef is installed without the gems option.
   only_if do
     output = `gem list --local | grep foreman`
     output.length == 0
@@ -164,7 +163,14 @@ deploy_revision "mytardis" do
   end
   restart_command do
     current_release = release_path
-
+    bash "Creating tardis.log and request.log" do
+      # Not really sure why this is needed - had a problem where these log files were owned by root.
+      cwd "/opt/mytardis/current"
+      code <<-EOH
+        touch tardis.log request.log
+        chown mytardis:mytardis tardis.log request.log
+      EOH
+    end 
     bash "mytardis_foreman_install_and_restart" do
       cwd "/opt/mytardis/current"
       code <<-EOH

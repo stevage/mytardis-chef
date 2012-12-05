@@ -19,22 +19,8 @@
 # limitations under the License.
 #
 
-pg_packages = case node['platform']
-when "ubuntu","debian"
-  %w{postgresql-client libpq-dev}
-when "fedora","suse","amazon"
-  %w{postgresql-devel}
-when "redhat","centos","scientific"
-  case
-  when node['platform_version'].to_f >= 6.0
-    %w{postgresql-devel}
-  else
-    [ "postgresql#{node['postgresql']['version'].split('.').join}-devel" ]
-  end
-end
+node['postgresql']['client']['packages'].each do |pg_pack|
 
-pg_packages.each do |pg_pack|
   package pg_pack
-end
 
-gem_package "pg"
+end
